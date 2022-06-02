@@ -79,3 +79,17 @@ async def edit(
         raise HTTPException(403, detail='Couldn\'t edit. Wrong Authorization.')
 
     await crud_addresses.update(database, address_id, updated_address)
+
+
+@router.post('/addresses/close', response_model=AddressSchema)
+async def get_by_location(
+    address: AddressSchema,
+    user: UserSchema = Depends(get_current_user),
+    database: Database = Depends(get_db)
+):
+    address = await crud_addresses.get_closest(database, address, user.id)
+
+    if not address:
+        raise HTTPException(404, detail='Couldn\'t find closest location.')
+
+    return address
